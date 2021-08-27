@@ -1,8 +1,8 @@
 #include <Arduino.h>
-#include <WiFi.h>
-#include <Time.h>
 #include <FastLED.h>
+#include <WiFi.h>
 #include <WiFiManager.h>
+#include <time.h>
 
 #define MY_NTP_SERVER "de.pool.ntp.org"
 #define MY_TZ "CET-1CEST,M3.5.0/02,M10.5.0/03"
@@ -36,55 +36,49 @@ void showColon(int flag);
 void showSeconds(uint8_t seconds);
 void waitingForNtpSync();
 
-void IRAM_ATTR onTimer()
-{
+void IRAM_ATTR onTimer() {
+
   halfSecondFlag = !halfSecondFlag;
   newClockDrawFlag = true;
 }
 
-void ledInit()
-{
-  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+void ledInit() {
+  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
+      .setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(42);
   FastLED.clear();
 
-  for (int i = 0; i < NUM_LEDS; i++)
-  {
+  for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = CRGB(255, 255, 255);
     FastLED.show();
     delay(10);
   }
   delay(500);
 
-  for (int i = 0; i < SEGMENTOFFSET; i++)
-  {
+  for (int i = 0; i < SEGMENTOFFSET; i++) {
     leds[i] = colorSeconds;
     FastLED.show();
     delay(1);
   }
-  for (int i = SEGMENTOFFSET; i < COLONOFFSET; i++)
-  {
+  for (int i = SEGMENTOFFSET; i < COLONOFFSET; i++) {
     leds[i] = colorDigits;
     FastLED.show();
     delay(1);
   }
-  for (int i = COLONOFFSET; i < NUM_LEDS; i++)
-  {
+  for (int i = COLONOFFSET; i < NUM_LEDS; i++) {
     leds[i] = colorColon;
     FastLED.show();
     delay(1);
   }
 
-  for (int i = 0; i < 255; i++)
-  {
+  for (int i = 0; i < 255; i++) {
     fadeToBlackBy(leds, 60, 1);
     delay(1);
     FastLED.show();
   }
 }
 
-void showSeconds(uint8_t seconds)
-{
+void showSeconds(uint8_t seconds) {
   uint8_t secLed = (seconds + 59) % 60;
 
   if (seconds % 5)
@@ -95,17 +89,13 @@ void showSeconds(uint8_t seconds)
   fadeToBlackBy(leds, 60, 3);
 }
 
-void showColon(int flag)
-{
-  if (flag)
-  {
+void showColon(int flag) {
+  if (flag) {
     leds[COLONOFFSET + 0] = colorColon;
     leds[COLONOFFSET + 1] = colorColon;
     leds[COLONOFFSET + 2] = colorColon;
     leds[COLONOFFSET + 3] = colorColon;
-  }
-  else
-  {
+  } else {
     leds[COLONOFFSET + 0] = CRGB(0, 0, 0);
     leds[COLONOFFSET + 1] = CRGB(0, 0, 0);
     leds[COLONOFFSET + 2] = CRGB(0, 0, 0);
@@ -113,49 +103,40 @@ void showColon(int flag)
   }
 }
 
-void printDigit(uint8_t value, uint8_t position)
-{
-  uint8_t segment[11][14] =
-  {
-    {// 0
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {// 1
-      0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-    {// 2
-      1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1},
-    {// 3
-      1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1},
-    {// 4
-      0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1},
-    {// 5
-      1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1},
-    {// 6
-      1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {// 7
-      1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-    {// 8
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {// 9
-      1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1},
-    {// off
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-  };
+void printDigit(uint8_t value, uint8_t position) {
+  uint8_t segment[11][14] = {{// 0
+                              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+                             {// 1
+                              0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+                             {// 2
+                              1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1},
+                             {// 3
+                              1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1},
+                             {// 4
+                              0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1},
+                             {// 5
+                              1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1},
+                             {// 6
+                              1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                             {// 7
+                              1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+                             {// 8
+                              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                             {// 9
+                              1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1},
+                             {// off
+                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
-  for (int i = 0; i < 14; i++)
-  {
-    if (segment[value][i])
-    {
+  for (int i = 0; i < 14; i++) {
+    if (segment[value][i]) {
       leds[SEGMENTOFFSET + i + position * 14] = colorDigits;
-    }
-    else
-    {
+    } else {
       leds[SEGMENTOFFSET + i + position * 14] = CRGB(0, 0, 0);
     }
   }
 }
 
-void printClock()
-{
+void printClock() {
   uint8_t seconds = 0;
   uint8_t minutes = 0;
   uint8_t hours = 0;
@@ -188,28 +169,24 @@ void printClock()
   FastLED.show();
 }
 
-void waitingForNtpSync()
-{
+void waitingForNtpSync() {
   time(&now);
   localtime_r(&now, &tm);
 
-  while (tm.tm_year <= 70)
-  {
+  while (tm.tm_year <= 70) {
     time(&now);
     localtime_r(&now, &tm);
   }
 
   int sec = tm.tm_sec;
-  while (sec == tm.tm_sec)
-  {
+  while (sec == tm.tm_sec) {
     time(&now);
     localtime_r(&now, &tm);
   }
   delay(250);
 }
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
   Serial.println();
 
@@ -224,19 +201,18 @@ void setup()
   bool res;
   res = wifiManager.autoConnect("ws2812-clock");
 
-  if (!res)
-  {
+  if (!res) {
     Serial.println("Failed to connect");
     delay(2500);
     ESP.restart();
-  }
-  else
-  {
+  } else {
     Serial.println("WiFi connected...");
   }
 
-  configTime(0, 0, MY_NTP_SERVER); // 0, 0 because we will use TZ in the next line
-  setenv("TZ", MY_TZ, 1);          // Set environment variable with your time zone
+  configTime(0, 0,
+             MY_NTP_SERVER); // 0, 0 because we will use TZ in the next line
+  setenv("TZ", MY_TZ,
+         1); // Set environment variable with your time zone
   tzset();
 
   timer = timerBegin(0, 80, true);
@@ -248,10 +224,8 @@ void setup()
   timerAlarmEnable(timer);
 }
 
-void loop()
-{
-  if (newClockDrawFlag)
-  {
+void loop() {
+  if (newClockDrawFlag) {
     newClockDrawFlag = false;
     time(&now);
     localtime_r(&now, &tm);
